@@ -6,10 +6,12 @@
 #include "TagPushButton.h"
 #include <qthreadpool.h>
 #include "Lib/json.hpp"
+#include <QTableView>
 
 QT_BEGIN_NAMESPACE
 class QGraphicsView;
 class QListView;
+class QTableView;
 class QLayout;
 QT_END_NAMESPACE
 
@@ -53,6 +55,7 @@ private:
 	void imageTaskFailed(int, int);
 
 	CalibrationListModel* model;
+	QStandardItemModel* pairModel;
 	QSpacerItem* spacer;
 	const QPalette calibrationValid = QPalette(QColor(24, 185, 119));
 	const QPalette calibrationInvalid = QPalette(QColor(253, 91, 93));
@@ -72,5 +75,7 @@ private:
 	QGraphicsView *leftCamView, *rightCamView;
 	QListView* imageSets;
 	QLayout* pairLayout;
+	QTableView* pairSummary;
+	QSplitter* summarySplitter;
 };
 

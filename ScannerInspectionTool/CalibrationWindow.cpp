@@ -2,7 +2,6 @@
 #include <QFileDialog>
 #include "Lib/json.hpp"
 #include "JsonTypes.h"
-#include <set>
 #include <QGraphicsPixmapItem>
 #include "CalibrationImageValidityTask.h"
 
@@ -29,11 +28,17 @@ CalibrationWindow::CalibrationWindow(QWidget *parent) : QWidget(parent)
 	rightCam = new QGraphicsScene();
 	rightCamView->setScene(rightCam);
 
+	pairSummary = findChild<QTableView*>("pairSummary");
+	pairModel = new QStandardItemModel();
+	pairSummary->setModel(pairModel);
+
 	QSplitter* imageSplitter = findChild<QSplitter*>("imageSplitter");
 	connect(imageSplitter, &QSplitter::splitterMoved, this, &CalibrationWindow::splitterChanged);
 
 	QSplitter* main = findChild<QSplitter*>("mainSplitter");
 	connect(main, &QSplitter::splitterMoved, this, &CalibrationWindow::splitterChanged);
+
+	summarySplitter = findChild<QSplitter*>("keySplitter");
 }
 
 
@@ -58,6 +63,15 @@ void CalibrationWindow::projectSelected(QString project)
 {
 	projectPath = project;
 	QString data = getProjectJsonString();
+
+	if (model->rowCount() > 0) model->clearData();
+	for (int i = 0; i < cameras->size(); ++i) 
+	{
+		cameras->at(i).workingCount = 0;
+
+		QStandardItem* qty = new QStandardItem(QString::number(0));
+		pairModel->setItem(i, 1, qty);
+	}
 
 	json json = json::parse(data.toStdString().c_str());
 	for (int i = 0; i < json["ImageSets"].size(); ++i) {
@@ -195,7 +209,9 @@ void CalibrationWindow::processCameraPairs(QByteArray data)
 {
 	QString jsonText = data;
 	if (jsonText.startsWith("Fail")) return;
+
 	if (cameras->size() > 0) cameras->clear();
+	if (pairModel->rowCount() > 0) pairModel->clear();
 
 	json pairs = json::parse(jsonText.toStdString().c_str());
 	for (int i = 0; i < pairs.size(); ++i)
@@ -206,6 +222,39 @@ void CalibrationWindow::processCameraPairs(QByteArray data)
 		pair.id = pairs.at(i)["pairId"];
 
 		cameras->push_back(pair);
+
+		QStandardItem* item = new QStandardItem(QString::number(pair.leftId) + " - " + QString::number(pair.rightId));
+		pairModel->setItem(i, 0, item);
+		QStandardItem* qty = new QStandardItem(QString::number(0));
+		pairModel->setItem(i, 1, qty);
+	}
+
+	//resize the splitter to fit to the ideal size for the amount of image pairs that are avaliable
+	{
+		int idealSize = pairModel->rowCount() * pairSummary->rowHeight(0);
+		QList<int> size = summarySplitter->sizes();
+		QList<int> newSize = QList<int>();
+
+		int total = 0;
+		for (int i = 0; i < size.size(); ++i)
+			total += size.at(i);
+
+		if (total > 0) {
+			int oldProp = total - size.back();
+			int newProp = total - idealSize;
+
+			for (int i = 0; i < size.size() - 1; ++i)
+			{
+				float proportians = size.at(i) / oldProp;
+				newSize.append(newProp * proportians);
+			}
+
+			newSize.append(idealSize);
+			summarySplitter->setSizes(newSize);
+		}
+
+		//todo do this when the window is first opened to avoid having to resize the table manually as a camera can already be 
+		//connected to when the window is opened!
 	}
 
 	//button setup
@@ -425,9 +474,19 @@ void CalibrationWindow::checkImagePairs(CalibrationSet* set) const
 			set->pairs->at(i) = CalibrationValidity::Missing;
 		else
 		{
-			if (leftName->valid == Valid && rightName->valid == Valid)
+			if (leftName->valid == Invalid || rightName->valid == Invalid)
+			{
+				set->pairs->at(i) = Invalid;
+				continue;
+			}
+			else if (leftName->valid == Valid && rightName->valid == Valid)
 			{
 				set->pairs->at(i) = Valid;
+				cameras->at(i).workingCount++;
+
+				QStandardItem* qty = new QStandardItem(QString::number(cameras->at(i).workingCount));
+				pairModel->setItem(i, 1, qty);
+
 				continue;
 			}
 

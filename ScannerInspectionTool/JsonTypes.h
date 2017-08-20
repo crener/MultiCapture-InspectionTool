@@ -37,7 +37,7 @@ struct CalibrationImage
 
 struct CameraPair
 {
-	int leftId, rightId, id;
+	int leftId, rightId, id, workingCount;
 	CalibrationValidity valid = Pending;
 };
 
