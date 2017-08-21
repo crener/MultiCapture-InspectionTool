@@ -177,6 +177,21 @@ void CalibrationWindow::newImageTransfered(int setId, int imageId)
 		calculateButtonStates();
 }
 
+void CalibrationWindow::windowOpened()
+{
+	enabled = true;
+	resizeControlSplitter();
+
+	if(model->rowCount() > 0)
+	{
+		for (int i = 0; i < model->rowCount(); ++i)
+		{
+			CalibrationSet* set = model->getSet(i);
+			generateCalibrationTasks(set);
+		}
+	}
+}
+
 void CalibrationWindow::respondToScanner(ScannerCommands command, QByteArray data)
 {
 	switch (command)
@@ -229,33 +244,7 @@ void CalibrationWindow::processCameraPairs(QByteArray data)
 		pairModel->setItem(i, 1, qty);
 	}
 
-	//resize the splitter to fit to the ideal size for the amount of image pairs that are avaliable
-	{
-		int idealSize = pairModel->rowCount() * pairSummary->rowHeight(0);
-		QList<int> size = summarySplitter->sizes();
-		QList<int> newSize = QList<int>();
-
-		int total = 0;
-		for (int i = 0; i < size.size(); ++i)
-			total += size.at(i);
-
-		if (total > 0) {
-			int oldProp = total - size.back();
-			int newProp = total - idealSize;
-
-			for (int i = 0; i < size.size() - 1; ++i)
-			{
-				float proportians = size.at(i) / oldProp;
-				newSize.append(newProp * proportians);
-			}
-
-			newSize.append(idealSize);
-			summarySplitter->setSizes(newSize);
-		}
-
-		//todo do this when the window is first opened to avoid having to resize the table manually as a camera can already be 
-		//connected to when the window is opened!
-	}
+	resizeControlSplitter();
 
 	//button setup
 	pairLayout->removeItem(spacer);
@@ -370,8 +359,37 @@ QString CalibrationWindow::getImageName(CalibrationSet* search, int camId) const
 	return "";
 }
 
+void CalibrationWindow::resizeControlSplitter()
+{
+	int idealSize = pairModel->rowCount() * pairSummary->rowHeight(0);
+	QList<int> size = summarySplitter->sizes();
+	QList<int> newSize = QList<int>();
+
+	int total = 0;
+	for (int i = 0; i < size.size(); ++i)
+		total += size.at(i);
+
+	if (total > 0) {
+		int oldProp = total - size.back();
+		int newProp = total - idealSize;
+
+		for (int i = 0; i < size.size() - 1; ++i)
+		{
+			float proportians = size.at(i) / oldProp;
+			newSize.append(newProp * proportians);
+		}
+
+		newSize.append(idealSize);
+		summarySplitter->setSizes(newSize);
+	}
+
+	//todo do this when the window is first opened to avoid having to resize the table manually as a camera can already be 
+	//connected to when the window is opened!
+}
+
 void CalibrationWindow::generateCalibrationTasks(CalibrationSet* set) const
 {
+	if (!enabled) return;
 	QString basePath = projectPath + "/" + set->name + "/";
 	QString savePath = basePath + "calibration/";
 

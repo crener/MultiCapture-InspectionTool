@@ -31,6 +31,7 @@ public:
 	void scannerConnected();
 	void scannerDisconnected();
 	void newImageTransfered(int setId, int imageId);
+	void windowOpened();
 
 	private slots:
 	void selctionChanged(QModelIndex index);
@@ -46,6 +47,7 @@ private:
 	void resizePreviews() const;
 	void resizeEvent(QResizeEvent *event) override;
 	QString getImageName(CalibrationSet* search, int camId) const;
+	void resizeControlSplitter();
 
 	CalibrationSet* generateCalibrationSet(nlohmann::json json) const;
 	void checkImagePairs(CalibrationSet* set) const;
@@ -57,6 +59,7 @@ private:
 	CalibrationListModel* model;
 	QStandardItemModel* pairModel;
 	QSpacerItem* spacer;
+	bool enabled = false;
 	const QPalette calibrationValid = QPalette(QColor(24, 185, 119));
 	const QPalette calibrationInvalid = QPalette(QColor(253, 91, 93));
 	const QPalette calibrationPending = QPalette();

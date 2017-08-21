@@ -38,6 +38,8 @@ void CalibrationImageValidityTask::run()
 
 	vector<Point2f>& corners = vector<Point2f>();
 
+	//todo use "CALIB_CB_FAST_CHECK" flag to quickly check if the image contains a chessboard before doing a high quality check
+
 	bool found = findChessboardCorners(image, board, corners,
 		CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE);
 	if (!found)

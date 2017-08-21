@@ -49,7 +49,7 @@ ScannerInspectionTool::ScannerInspectionTool(QWidget *parent)
 	connect(deviceScanBtn, &QPushButton::released, this, &ScannerInspectionTool::refreshDevices);
 	connect(nameBtn, &QPushButton::released, this, &ScannerInspectionTool::changeScannerName);
 	connect(logRefresh, SIGNAL(released()), this, SLOT(refreshLogs()));
-	
+
 	QSplitter* top = findChild<QSplitter*>("topSplitter");
 	connect(top, &QSplitter::splitterMoved, this, &ScannerInspectionTool::splitterChanged);
 	QSplitter* left = findChild<QSplitter*>("leftSplitter");
@@ -246,7 +246,10 @@ void ScannerInspectionTool::openDirectInteraction()
 
 void ScannerInspectionTool::openCalibration()
 {
-	if (!calibWn->isVisible()) calibWn->show();
+	if (!calibWn->isVisible()) {
+		calibWn->show();
+		emit calibWn->windowOpened();
+	}
 }
 
 void ScannerInspectionTool::splitterChanged(int pos, int index)
