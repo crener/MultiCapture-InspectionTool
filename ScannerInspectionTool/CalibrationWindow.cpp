@@ -39,6 +39,9 @@ CalibrationWindow::CalibrationWindow(QWidget *parent) : QWidget(parent)
 	connect(main, &QSplitter::splitterMoved, this, &CalibrationWindow::splitterChanged);
 
 	summarySplitter = findChild<QSplitter*>("keySplitter");
+
+	configureButton = findChild<QPushButton*>("genButton");
+	connect(configureButton, &QPushButton::pressed, this, &CalibrationWindow::startConfigGeneration);
 }
 
 
@@ -63,6 +66,7 @@ void CalibrationWindow::projectSelected(QString project)
 {
 	projectPath = project;
 	QString data = getProjectJsonString();
+	configureButton->setEnabled(false);
 
 	if (model->rowCount() > 0) model->clearData();
 	for (int i = 0; i < cameras->size(); ++i) 
@@ -153,6 +157,11 @@ void CalibrationWindow::pairChange(const int& id)
 void CalibrationWindow::splitterChanged(int pos, int index)
 {
 	resizePreviews();
+}
+
+void CalibrationWindow::startConfigGeneration()
+{
+
 }
 
 void CalibrationWindow::newImageTransfered(int setId, int imageId)
@@ -422,6 +431,7 @@ void CalibrationWindow::imageTaskComplete(int set, int img)
 	}
 
 	checkImagePairs(activeSet);
+	configureButton->setEnabled(true);
 }
 
 void CalibrationWindow::imageTaskFailed(int set, int img)

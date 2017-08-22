@@ -37,6 +37,7 @@ public:
 	void selctionChanged(QModelIndex index);
 	void pairChange(const int &id);
 	void splitterChanged(int pos, int index);
+	void startConfigGeneration();
 
 private:
 	void respondToScanner(ScannerCommands, QByteArray) override;
@@ -76,6 +77,7 @@ private:
 	Ui::CalibrationWindow ui;
 	ScannerInteraction* connection;
 	QGraphicsView *leftCamView, *rightCamView;
+	QPushButton* configureButton;
 	QListView* imageSets;
 	QLayout* pairLayout;
 	QTableView* pairSummary;
