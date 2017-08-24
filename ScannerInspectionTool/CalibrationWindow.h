@@ -38,6 +38,7 @@ public:
 	void pairChange(const int &id);
 	void splitterChanged(int pos, int index);
 	void startConfigGeneration();
+	void configGenComplete();
 
 private:
 	void respondToScanner(ScannerCommands, QByteArray) override;
@@ -61,6 +62,7 @@ private:
 	QStandardItemModel* pairModel;
 	QSpacerItem* spacer;
 	bool enabled = false;
+	bool confBtnEnable = false;
 	const QPalette calibrationValid = QPalette(QColor(24, 185, 119));
 	const QPalette calibrationInvalid = QPalette(QColor(253, 91, 93));
 	const QPalette calibrationPending = QPalette();
@@ -73,6 +75,8 @@ private:
 	CalibrationSet* activeSet = nullptr;
 	int activePair = -1;
 	QThreadPool* workQueue = new QThreadPool(this);
+	QString rawPairs = "";
+	QThread* finishThread = new QThread(this);
 
 	Ui::CalibrationWindow ui;
 	ScannerInteraction* connection;

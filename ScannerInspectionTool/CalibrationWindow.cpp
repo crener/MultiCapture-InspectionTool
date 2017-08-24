@@ -4,6 +4,7 @@
 #include "JsonTypes.h"
 #include <QGraphicsPixmapItem>
 #include "CalibrationImageValidityTask.h"
+#include "CameraCalibrationThread.h"
 
 
 CalibrationWindow::CalibrationWindow(QWidget *parent) : QWidget(parent)
@@ -59,6 +60,9 @@ CalibrationWindow::~CalibrationWindow()
 
 	cameras->clear();
 	delete cameras;
+
+	finishThread->quit();
+	finishThread->quit();
 }
 
 //clear the existing imagesets and load a new project
@@ -67,9 +71,10 @@ void CalibrationWindow::projectSelected(QString project)
 	projectPath = project;
 	QString data = getProjectJsonString();
 	configureButton->setEnabled(false);
+	confBtnEnable = false;
 
 	if (model->rowCount() > 0) model->clearData();
-	for (int i = 0; i < cameras->size(); ++i) 
+	for (int i = 0; i < cameras->size(); ++i)
 	{
 		cameras->at(i).workingCount = 0;
 
@@ -161,7 +166,28 @@ void CalibrationWindow::splitterChanged(int pos, int index)
 
 void CalibrationWindow::startConfigGeneration()
 {
+	if (finishThread->isRunning()) return;
 
+	CameraCalibrationThread* work = new CameraCalibrationThread(projectPath, rawPairs);
+	work->moveToThread(finishThread);
+
+	connect(work, &CameraCalibrationThread::complete, this, &CalibrationWindow::configGenComplete);
+	connect(finishThread, &QThread::started, work, &CameraCalibrationThread::start);
+
+	finishThread->start();
+	//emit work->start();
+
+	configureButton->setText("Working");
+	configureButton->setEnabled(false);
+}
+
+void CalibrationWindow::configGenComplete()
+{
+	configureButton->setText("Configure");
+	configureButton->setEnabled(confBtnEnable);
+	finishThread->quit();
+
+	//todo send pair results to the scanner for future use
 }
 
 void CalibrationWindow::newImageTransfered(int setId, int imageId)
@@ -189,9 +215,9 @@ void CalibrationWindow::newImageTransfered(int setId, int imageId)
 void CalibrationWindow::windowOpened()
 {
 	enabled = true;
-	resizeControlSplitter();
+	if(cameras->size() > 0) resizeControlSplitter();
 
-	if(model->rowCount() > 0)
+	if (model->rowCount() > 0)
 	{
 		for (int i = 0; i < model->rowCount(); ++i)
 		{
@@ -207,6 +233,7 @@ void CalibrationWindow::respondToScanner(ScannerCommands command, QByteArray dat
 	{
 	case ScannerCommands::CameraPairs:
 		processCameraPairs(data);
+		rawPairs = data;
 		break;
 	}
 }
@@ -391,9 +418,6 @@ void CalibrationWindow::resizeControlSplitter()
 		newSize.append(idealSize);
 		summarySplitter->setSizes(newSize);
 	}
-
-	//todo do this when the window is first opened to avoid having to resize the table manually as a camera can already be 
-	//connected to when the window is opened!
 }
 
 void CalibrationWindow::generateCalibrationTasks(CalibrationSet* set) const
@@ -432,6 +456,7 @@ void CalibrationWindow::imageTaskComplete(int set, int img)
 
 	checkImagePairs(activeSet);
 	configureButton->setEnabled(true);
+	confBtnEnable = true;
 }
 
 void CalibrationWindow::imageTaskFailed(int set, int img)

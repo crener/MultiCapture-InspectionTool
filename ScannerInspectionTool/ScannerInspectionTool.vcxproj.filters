@@ -190,6 +190,21 @@
     <ClCompile Include="GeneratedFiles\Release\moc_CalibrationImageValidityTask.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_CameraCalibrationThread.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_CameraCalibrationThread.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraCalibrationThread.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraCalibrationTask.cpp">
+      <Filter>Source Files\Tasks</Filter>
+    </ClCompile>
+    <ClCompile Include="StereoCalibrationTask.cpp">
+      <Filter>Source Files\Tasks</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ScannerInspectionTool.ui">
@@ -237,6 +252,12 @@
     <CustomBuild Include="CalibrationImageValidityTask.h">
       <Filter>Header Files\Tasks</Filter>
     </CustomBuild>
+    <CustomBuild Include="CameraCalibrationThread.h">
+      <Filter>Header Files\Threading</Filter>
+    </CustomBuild>
+    <CustomBuild Include="StereoCalibrationTask.h">
+      <Filter>Header Files\Tasks</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_ScannerInspectionTool.h">
@@ -268,6 +289,9 @@
     </ClInclude>
     <ClInclude Include="JsonTypes.h">
       <Filter>Header Files\Data Handlers</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraCalibrationTask.h">
+      <Filter>Header Files\Tasks</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

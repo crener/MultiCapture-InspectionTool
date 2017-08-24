@@ -56,8 +56,8 @@ void CalibrationImageValidityTask::run()
 	}
 
 	//refine results
-	cornerSubPix(image, corners, Size(5, 5), Size(-1, -1),
-		TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 60, 0.05));
+	//cornerSubPix(image, corners, Size(5, 5), Size(-1, -1),
+	//	TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
 
 	//save image
 	vector<int> compression_params;
