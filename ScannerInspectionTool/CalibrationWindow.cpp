@@ -168,7 +168,7 @@ void CalibrationWindow::startConfigGeneration()
 {
 	if (finishThread->isRunning()) return;
 
-	CameraCalibrationThread* work = new CameraCalibrationThread(projectPath, rawPairs);
+	CameraCalibrationThread* work = new CameraCalibrationThread(projectPath, rawPairs, connection);
 	work->moveToThread(finishThread);
 
 	connect(work, &CameraCalibrationThread::complete, this, &CalibrationWindow::configGenComplete);
@@ -186,8 +186,6 @@ void CalibrationWindow::configGenComplete()
 	configureButton->setText("Configure");
 	configureButton->setEnabled(confBtnEnable);
 	finishThread->quit();
-
-	//todo send pair results to the scanner for future use
 }
 
 void CalibrationWindow::newImageTransfered(int setId, int imageId)

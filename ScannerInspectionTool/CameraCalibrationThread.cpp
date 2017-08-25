@@ -3,13 +3,14 @@
 #include <QFileDialog>
 #include "CameraCalibrationTask.h"
 #include "StereoCalibrationTask.h"
-#include <qurlquery.h>
-#include <opencv2/core/persistence.hpp>
+#include "parameterBuilder.h"
 
 
-CameraCalibrationThread::CameraCalibrationThread(QString projectPath, const QString pairJson)
+CameraCalibrationThread::CameraCalibrationThread(QString projectPath, const QString pairJson, ScannerInteraction *connector)
 {
 	path = projectPath;
+	connection = connector;
+
 	extractPairs(pairJson);
 }
 
@@ -43,15 +44,24 @@ void CameraCalibrationThread::start()
 		QString leftConfig = path + "/" + camNames[pairs->at(i)->leftId] + "-calibration.json";
 		QString rightConfig = path + "/" + camNames[pairs->at(i)->rightId] + "-calibration.json";
 		QString sampleImage = imageLocations.at(pairs->at(i)->leftId).front();
-		QString savepath = path + "/calibration/" + QString::number(pairs->at(i)->id) + ".json";
+		QString savePath = path + "/calibration/" + QString::number(pairs->at(i)->id) + ".json";
 
-		StereoCalibrationTask* task = new StereoCalibrationTask(leftConfig, imageLocations[pairs->at(i)->leftId], 
-			rightConfig, imageLocations[pairs->at(i)->rightId], sampleImage, savepath);
+		StereoCalibrationTask* task = new StereoCalibrationTask(leftConfig, imageLocations[pairs->at(i)->leftId],
+			rightConfig, imageLocations[pairs->at(i)->rightId], sampleImage, savePath);
 
 		pool->start(task);
 	}
 	pool->waitForDone();
-	
+
+	//update the scanner configuration data
+	for (int i = 0; i < pairs->size(); ++i)
+	{
+		QString savePath = path + "/calibration/" + QString::number(pairs->at(i)->id) + ".json";
+		QString configData = readText(savePath);
+
+		emit connection->requestScanner(ScannerCommands::setCameraPairConfiguration, 
+			parameterBuilder().addParam("id", QString::number(pairs->at(i)->id))->addParam("config", configData)->toString(), nullptr);
+	}
 
 	emit complete();
 	deleteLater();
@@ -62,7 +72,7 @@ void CameraCalibrationThread::extractImages(QString projectFile)
 	QString jsonText = readText(projectFile);
 	if (jsonText == "") return
 
-	imageLocations.clear();
+		imageLocations.clear();
 	nlohmann::json json = nlohmann::json::parse(jsonText.toStdString().c_str());
 
 	for (int i = 0; i < json["Cameras"].size(); ++i)
@@ -76,12 +86,12 @@ void CameraCalibrationThread::extractImages(QString projectFile)
 
 			for (int k = 0; k < json["ImageSets"][j]["images"].size(); ++k)
 			{
-				if(json["ImageSets"][j]["images"][k]["id"] == camId)
+				if (json["ImageSets"][j]["images"][k]["id"] == camId)
 				{
 					QString image = QString::fromStdString(json["ImageSets"][j]["images"][k]["path"]);
 					image = image.section('.', 0, 0) + ".conf";
 
-					paths.push_back(path + "/"+ set + "/calibration/" + image);
+					paths.push_back(path + "/" + set + "/calibration/" + image);
 					break;
 				}
 			}

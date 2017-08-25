@@ -64,6 +64,7 @@ void ScannerInteraction::requestScanner(ScannerCommands command, QString params,
 	else result = result.mid(result.indexOf(">") + 1);
 
 	//emit scannerResult(command, result);
+	if (responder == nullptr) return;
 	responder->respondToScanner(command, result);
 }
 

@@ -22,7 +22,7 @@
      <widget class="QSplitter" name="keySplitter">
       <property name="maximumSize">
        <size>
-        <width>200</width>
+        <width>202</width>
         <height>16777215</height>
        </size>
       </property>
@@ -32,7 +32,7 @@
       <widget class="QListView" name="imageSets">
        <property name="maximumSize">
         <size>
-         <width>200</width>
+         <width>202</width>
          <height>16777215</height>
         </size>
        </property>

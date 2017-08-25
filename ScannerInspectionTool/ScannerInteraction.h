@@ -50,6 +50,8 @@ enum class ScannerCommands
 	getRecentLogDiff = 121,
 	getLoadedProjects = 130,
 	CameraPairs = 140,
+	getCameraPairConfiguration = 143,
+	setCameraPairConfiguration = 144,
 	getCapacity = 150,
 
 	//Camera Commands
