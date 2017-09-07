@@ -20,8 +20,6 @@ public:
 	ProjectView(QPushButton*, QPushButton*, QTableView*, ScannerInteraction*);
 	~ProjectView();
 
-	void respondToScanner(ScannerCommands, QByteArray) override;
-
 	signals:
 	void transferProject(const int);
 
@@ -35,6 +33,7 @@ public:
 
 	void triggerProjectChange();
 	void scannerConnected();
+	void respondToScanner(ScannerCommands, QByteArray) override;
 
 private:
 	const int timerDuration = 30000; //30sec

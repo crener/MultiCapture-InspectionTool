@@ -70,7 +70,7 @@ ScannerInspectionTool::ScannerInspectionTool(QWidget *parent)
 	calibWn->setConnection(connector);
 	CalibrationBtn = findChild<QAction*>("actionCalibration_Tool");
 	connect(CalibrationBtn, &QAction::triggered, this, &ScannerInspectionTool::openCalibration);
-	connect(transfer, &projectTransfer::newProjectImageDetected, calibWn, &CalibrationWindow::updateProject);
+	connect(transfer, &projectTransfer::projectUpdated, calibWn, &CalibrationWindow::updateProject);
 	connect(transfer, &projectTransfer::projectChanged, calibWn, &CalibrationWindow::projectSelected);
 	connect(transfer, &projectTransfer::imageTransfered, calibWn, &CalibrationWindow::newImageTransfered);
 	connect(connector, &ScannerInteraction::scannerConnected, calibWn, &CalibrationWindow::scannerConnected);

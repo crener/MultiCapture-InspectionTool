@@ -115,8 +115,7 @@ void projectTransfer::changeTransferAction()
 	}
 	else
 	{
-		if (transferSet >= setData->size() ||
-			transferImage >= setData->at(transferSet)->images->size()) return;
+		if (lastTransferReached()) return;
 
 		transfering = true;
 		statusControl->setIcon(Pause);
@@ -212,6 +211,8 @@ void projectTransfer::processProjectDetails(QByteArray data)
 
 			emit connector->requestScanner(ScannerCommands::ImageSetImageData, param, this);
 		}
+
+		emit projectUpdated(path->text() + "/" + QString::number(projectId));
 	}
 	else
 	{
@@ -244,6 +245,35 @@ void projectTransfer::currentScanner(QByteArray data)
 	if (result.startsWith("Fail")) projectError->showMessage(result.mid(result.indexOf("?") + 1));
 
 	currentProject = result.toInt();
+}
+
+bool projectTransfer::lastTransferReached() const
+{
+	if (transferSet >= setData->size() || transferImage >= setData->at(transferSet)->images->size())
+		return true;
+	return false;
+}
+
+void projectTransfer::iterateTransferIndex()
+{
+	QString projectDir = path->text() + "/" + QString::number(projectId) + "/";
+
+	do {
+
+		//iteracte the set
+		do {
+			if (transferImage < setData->at(transferSet)->images->size() - 1)
+				transferImage++;
+			else
+			{
+				transferSet++;
+				transferImage = 0;
+			}
+		} while (!lastTransferReached() && setData->at(transferSet)->images->size() == 0);
+
+		//check that the set hasn't already been transfered
+	} while (!lastTransferReached() &&
+		fileExists(projectDir + setData->at(transferSet)->name + "/" + setData->at(transferSet)->images->at(transferImage)->fileName));
 }
 
 void projectTransfer::continueTransfer(QByteArray data)
@@ -317,18 +347,9 @@ void projectTransfer::resumeTransferRequest()
 {
 	if (transferSet < setData->size())
 	{
-		QString projectDir = path->text() + "/" + QString::number(projectId) + "/";
+		iterateTransferIndex();
 
-		do {
-			if (transferImage < setData->at(transferSet)->images->size() - 1)
-				transferImage++;
-			else
-			{
-				transferSet++;
-				transferImage = 0;
-			}
-		} while (transferSet < setData->size() &&
-			fileExists(projectDir + setData->at(transferSet)->name + "/" + setData->at(transferSet)->images->at(transferImage)->fileName));
+		if (lastTransferReached()) return;
 
 		//dont stop transfering if the current  
 		if (transferSet >= setData->size() && currentProject != projectId) changeTransferAction();

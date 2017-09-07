@@ -89,7 +89,16 @@ bool CalibrationListModel::containsSet(int id) const
 	return false;
 }
 
-CalibrationSet* CalibrationListModel::getSet(int row)
+CalibrationSet* CalibrationListModel::getSet(int set)
 {
-	return sets->at(row);
+	if (sets->size() >= set)
+		return sets->at(set - 1);
+	else return nullptr;
+}
+
+CalibrationSet* CalibrationListModel::getRow(int row)
+{
+	if (row >= 0 && sets->size() > row)
+		return sets->at(row);
+	else return nullptr;
 }

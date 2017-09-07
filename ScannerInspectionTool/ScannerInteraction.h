@@ -14,7 +14,6 @@ public:
 	ScannerInteraction();
 	~ScannerInteraction();
 
-
 	public slots:
 	void connectToScanner(ScannerDeviceInformation* device);
 	//void requestScanner(ScannerCommands, QString);

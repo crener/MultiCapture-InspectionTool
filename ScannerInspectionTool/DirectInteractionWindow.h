@@ -22,6 +22,10 @@ public:
 	public slots:
 	void makeRequest();
 
+	private slots:
+	void respondToScanner(ScannerCommands, QByteArray) override;
+
+
 private:
 	Ui::DirectInteractionWindow ui;
 
@@ -32,7 +36,4 @@ private:
 	QLineEdit* parameters;
 
 	ScannerInteraction* connection;
-
-
-	void respondToScanner(ScannerCommands, QByteArray) override;
 };

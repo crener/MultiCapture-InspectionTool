@@ -39,9 +39,9 @@ public:
 	void splitterChanged(int pos, int index);
 	void startConfigGeneration();
 	void configGenComplete();
+	void respondToScanner(ScannerCommands, QByteArray) override;
 
 private:
-	void respondToScanner(ScannerCommands, QByteArray) override;
 	QString getProjectJsonString();
 	void processCameraPairs(QByteArray data);
 	void updateCameraImages();

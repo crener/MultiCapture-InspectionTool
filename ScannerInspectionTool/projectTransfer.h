@@ -21,16 +21,17 @@ public:
 	projectTransfer(QLineEdit*, QPushButton*, QTreeView*, ScannerInteraction*);
 	~projectTransfer();
 
-	void respondToScanner(ScannerCommands, QByteArray) override;
 
 	signals:
 	void projectChanged(QString path);
+	void projectUpdated(QString path);
 	void triggerImagePreview(QString);
 	void newProjectImageDetected();
 	void imageTransfered(int setId, int imageId);
 
 	public slots:
 	void changeTargetProject(int);
+	void respondToScanner(ScannerCommands, QByteArray) override;
 
 	private slots:
 	void changeTransferAction();
@@ -42,6 +43,9 @@ private:
 	void processProjectDetails(QByteArray);
 	void setupModelHeadings() const;
 	void currentScanner(QByteArray);
+
+	bool lastTransferReached() const;
+	void iterateTransferIndex();
 
 	//project detail management
 	void updateProjectTree(nlohmann::json) const;

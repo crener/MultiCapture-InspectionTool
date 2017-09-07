@@ -66,7 +66,8 @@ void ScannerInteraction::requestScanner(ScannerCommands command, QString params,
 	//emit scannerResult(command, result);
 	if (responder == nullptr) return;
 	if (result.size() == 0) return;
-	responder->respondToScanner(command, result);
+
+	emit responder->respondToScanner(command, result);
 }
 
 void ScannerInteraction::connectToScanner(ScannerDeviceInformation* device)

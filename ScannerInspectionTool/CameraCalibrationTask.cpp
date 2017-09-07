@@ -5,7 +5,7 @@
 #include <opencv2/calib3d/calib3d_c.h>
 #include <opencv2/calib3d.hpp>
 #include <opencv2/imgcodecs.hpp>
-
+#include <QMessageBox>
 
 using namespace cv;
 
@@ -26,6 +26,7 @@ void CameraCalibrationTask::run()
 	for (int i = 0; i < locations.size(); ++i)
 	{
 		QString data = loadTextfile(locations.at(i));
+		if (data.isEmpty()) continue;
 		nlohmann::json jsonFile = nlohmann::json::parse(data.toStdString().c_str());
 
 		vector<Point2f> points = vector<Point2f>();
@@ -49,14 +50,28 @@ void CameraCalibrationTask::run()
 	}
 
 	Size imgSize;
+	for (int i = 0; i < locations.size(); ++i)
 	{
-		QString location = locations[0];
+		QString location = locations[i];
 		int dotQty = location.count('.') - 1;
 		if (dotQty < 0) dotQty = 0;
 		location = location.section('.', dotQty, dotQty) + ".jpg";
 
+		int slash = location.count('/');
+		location = location.section('/', 0, slash - 2) + "/" + location.section('/', slash);
+
 		Mat img = imread(location.toStdString());
 		imgSize = img.size();
+
+		if (imgSize.width != 0 && imgSize.height != 0)
+			break;
+	}
+
+	if (imgSize.width == 0 && imgSize.height == 0)
+	{
+		QMessageBox msgBox;
+		msgBox.setText("Camera failed to calibrate");
+		msgBox.exec();
 	}
 
 	//calibrate the camera

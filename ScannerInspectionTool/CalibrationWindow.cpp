@@ -33,9 +33,9 @@ CalibrationWindow::CalibrationWindow(QWidget *parent) : QWidget(parent)
 	pairModel = new QStandardItemModel();
 	pairSummary->setModel(pairModel);
 
+	//setup auto scaling
 	QSplitter* imageSplitter = findChild<QSplitter*>("imageSplitter");
 	connect(imageSplitter, &QSplitter::splitterMoved, this, &CalibrationWindow::splitterChanged);
-
 	QSplitter* main = findChild<QSplitter*>("mainSplitter");
 	connect(main, &QSplitter::splitterMoved, this, &CalibrationWindow::splitterChanged);
 
@@ -104,6 +104,7 @@ void CalibrationWindow::updateProject()
 
 		int setId = imageSetJson["id"];
 		if (model->containsSet(setId)) continue;
+		//todo check if the amount of images match and add any new ones if they do (can happen if scanner is queried while taking a new image)
 
 		CalibrationSet* newSet = generateCalibrationSet(json["ImageSets"][i]);
 
@@ -135,7 +136,7 @@ void CalibrationWindow::scannerDisconnected()
 
 void CalibrationWindow::selctionChanged(QModelIndex index)
 {
-	activeSet = model->getSet(index.row());
+	activeSet = model->getRow(index.row());
 
 	calculateButtonStates();
 
@@ -191,6 +192,8 @@ void CalibrationWindow::configGenComplete()
 void CalibrationWindow::newImageTransfered(int setId, int imageId)
 {
 	CalibrationSet* set = model->getSet(setId);
+	if (set == nullptr) return;
+
 	for (int i = 0; i < set->images->size(); ++i)
 	{
 		if (set->images->at(i)->cameraId == imageId)
@@ -219,7 +222,7 @@ void CalibrationWindow::windowOpened()
 	{
 		for (int i = 0; i < model->rowCount(); ++i)
 		{
-			CalibrationSet* set = model->getSet(i);
+			CalibrationSet* set = model->getRow(i);
 			generateCalibrationTasks(set);
 		}
 	}
@@ -442,7 +445,7 @@ void CalibrationWindow::generateCalibrationTasks(CalibrationSet* set) const
 
 void CalibrationWindow::imageTaskComplete(int set, int img)
 {
-	CalibrationSet* activeSet = model->getSet(set - 1);
+	CalibrationSet* activeSet = model->getSet(set);
 	for (int i = 0; i < activeSet->images->size(); ++i)
 	{
 		if (activeSet->images->at(i)->cameraId == img)
@@ -459,7 +462,7 @@ void CalibrationWindow::imageTaskComplete(int set, int img)
 
 void CalibrationWindow::imageTaskFailed(int set, int img)
 {
-	CalibrationSet* activeSet = model->getSet(set - 1);
+	CalibrationSet* activeSet = model->getSet(set);
 	for (int i = 0; i < activeSet->images->size(); ++i)
 	{
 		if (activeSet->images->at(i)->cameraId == img)
